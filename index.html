@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Whale Delivery Search Widget</title>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Gowun Dodum', sans-serif;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .widget {
+      width: 96%; 
+      height: 94%;
+      border-radius: 24px; 
+      /* 🎨 배달원 패밀리 라인의 상징, 파스텔 그라데이션 배경 */
+      background: linear-gradient(to top right, #bae6fd, #eff6ff, #a7f3d0);
+      padding: 20px;
+      color: #0f172a;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+    }
+
+    .title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0369a1;
+      margin-bottom: 12px;
+      z-index: 30;
+    }
+
+    /* 🔍 검색창들을 감싸는 박스 */
+    .search-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      z-index: 30;
+    }
+
+    /* 구글, 네이버 개별 행 */
+    .search-row {
+      display: flex;
+      width: 100%;
+      height: 38px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+      border: 1px solid rgba(14, 165, 233, 0.2);
+      background: #ffffff;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .search-row:focus-within {
+      transform: translateY(-1px);
+      border-color: #0ea5e9;
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
+    }
+
+    /* 글자 입력칸 */
+    .search-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      padding: 0 14px;
+      font-family: 'Gowun Dodum', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    /* 돋보기 이동 버튼 */
+    .search-btn {
+      width: 50px;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      font-family: 'Gowun Dodum', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      color: #ffffff;
+      transition: opacity 0.2s;
+    }
+
+    .search-btn:hover {
+      opacity: 0.9;
+    }
+
+    /* 구글 & 네이버 고유 브랜드 색상 핏 맞춤 */
+    .google .search-btn { background: #4285f4; }
+    .naver .search-btn { background: #03c75a; }
+
+    /* 플레이스홀더(힌트문구) 색상 진하게 보정 */
+    .search-input::placeholder {
+      color: #94a3b8;
+      font-weight: 400;
+    }
+
+    .whale-tag {
+      margin-top: 12px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #0369a1;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .whale-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #0ea5e9;
+      box-shadow: 0 0 6px #0ea5e9;
+    }
+
+    /* 🧼 배경 물방울 레이어 */
+    .bubble-layer { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+    .bubble {
+      position: absolute;
+      bottom: -20px;
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: 50%;
+      animation: riseUp var(--duration) infinite linear;
+    }
+    @keyframes riseUp {
+      0% { transform: translateY(0) translateX(0) scale(0.6); opacity: 0; }
+      10% { opacity: 0.8; }
+      50% { transform: translateY(-50vh) translateX(-10px) scale(1); }
+      90% { opacity: 0.8; }
+      100% { transform: translateY(-110vh) translateX(10px) scale(0.7); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="widget">
+    <div class="bubble-layer" id="bubbleLayer"></div>
+    <div class="title">🐋 배달원의 실시간 검색 엔진</div>
+    
+    <div class="search-container">
+      <form class="search-row google" action="https://www.google.com/search" method="GET" target="_blank">
+        <input type="text" name="q" class="search-input" placeholder="구글에서 뜨개 정보 검색..." required />
+        <button type="submit" class="search-btn">구글</button>
+      </form>
+
+      <form class="search-row naver" action="https://search.naver.com/search.naver" method="GET" target="_blank">
+        <input type="text" name="query" class="search-input" placeholder="네이버에서 실 리뷰 검색..." required />
+        <button type="submit" class="search-btn">네이버</button>
+      </form>
+    </div>
+
+    <div class="whale-tag">
+      <div class="whale-dot"></div>
+      <span>whale search dispatch</span>
+    </div>
+  </div>
+
+  <script>
+    // 퐁퐁 솟아오르는 기포 효과 스크립트
+    const bubbleLayer = document.getElementById('bubbleLayer');
+    for (let i = 0; i < 15; i++) {
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      const size = Math.random() * 7 + 4;
+      bubble.style.width = size + 'px';
+      bubble.style.height = size + 'px';
+      bubble.style.left = Math.random() * 100 + '%';
+      bubble.style.setProperty('--duration', (Math.random() * 5 + 6) + 's');
+      bubble.style.animationDelay = Math.random() * 8 + 's';
+      bubbleLayer.appendChild(bubble);
+    }
+  </script>
+
+</body>
+</html>
